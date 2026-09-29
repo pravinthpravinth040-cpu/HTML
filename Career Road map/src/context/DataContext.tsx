@@ -60,6 +60,7 @@ interface DataContextType {
 
   // Student Actions
   selectCareerGoal: (careerId: string) => Promise<boolean>;
+  selectRoadmap: (roadmapId: string) => Promise<boolean>;
   toggleMaterialComplete: (materialId: string) => Promise<boolean>;
   updateTaskStatus: (taskId: string, status: 'not_started' | 'in_progress' | 'completed', notes?: string) => Promise<boolean>;
   logStudySession: (durationSeconds: number, mode: '25_min' | '50_min' | 'custom', topicId?: string, topicName?: string) => Promise<boolean>;
@@ -79,10 +80,12 @@ interface DataContextType {
   createPhase: (data: Omit<RoadmapPhase, 'id' | 'createdAt'>) => Promise<RoadmapPhase>;
   updatePhase: (id: string, data: Partial<RoadmapPhase>) => Promise<boolean>;
   deletePhase: (id: string) => Promise<boolean>;
+  reorderPhases: (phaseIds: string[]) => Promise<boolean>;
 
   createModule: (data: Omit<Module, 'id' | 'createdAt'>) => Promise<Module>;
   updateModule: (id: string, data: Partial<Module>) => Promise<boolean>;
   deleteModule: (id: string) => Promise<boolean>;
+  reorderModules: (moduleIds: string[]) => Promise<boolean>;
 
   createTopic: (data: Omit<Topic, 'id' | 'createdAt'>) => Promise<Topic>;
   updateTopic: (id: string, data: Partial<Topic>) => Promise<boolean>;
@@ -281,9 +284,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     id: d.id,
     careerPathId: d.career_path_id,
     title: d.title,
+    shortDescription: d.short_description || '',
     description: d.description || '',
+    coverImageUrl: d.cover_image_url || '',
+    difficulty: d.difficulty || 'Intermediate',
+    estimatedDuration: d.estimated_duration || '6 Months',
+    learningObjectives: d.learning_objectives || [],
+    skillsCovered: d.skills_covered || [],
+    prerequisites: d.prerequisites || [],
     version: d.version || '1.0',
     status: d.status,
+    displayOrder: d.display_order || 0,
     createdAt: d.created_at,
     updatedAt: d.updated_at,
   });
@@ -293,6 +304,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     roadmapId: d.roadmap_id,
     title: d.title,
     description: d.description || '',
+    phaseImageUrl: d.phase_image_url || '',
+    skillsCovered: d.skills_covered || [],
+    prerequisites: d.prerequisites || [],
     learningObjectives: d.learning_objectives || [],
     estimatedDuration: d.estimated_duration || '',
     sortOrder: d.sort_order || 0,
@@ -305,6 +319,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phaseId: d.phase_id,
     name: d.name,
     description: d.description || '',
+    courseImageUrl: d.course_image_url || '',
     estimatedDuration: d.estimated_duration || '',
     difficulty: d.difficulty || 'Intermediate',
     learningObjectives: d.learning_objectives || [],

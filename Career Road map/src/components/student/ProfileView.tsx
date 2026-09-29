@@ -10,11 +10,15 @@ import {
   Save,
   CheckCircle2,
   Sparkles,
-  Award
+  Award,
+  Upload,
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { GithubIcon, LinkedInIcon } from '../common/BrandIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { uploadStudyMaterialFile } from '../../services/storageService';
 
 export const ProfileView: React.FC = () => {
   const { profile, updateProfile } = useAuth();
@@ -39,6 +43,39 @@ export const ProfileView: React.FC = () => {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [resumeFileName, setResumeFileName] = useState('');
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Please upload a valid PDF document (.pdf).');
+      return;
+    }
+
+    setIsUploadingResume(true);
+    try {
+      const uploadRes = await uploadStudyMaterialFile(file, 'resumes');
+      if (uploadRes.url) {
+        setFormData(prev => ({ ...prev, resumeUrl: uploadRes.url }));
+        setResumeFileName(file.name);
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          setFormData(prev => ({ ...prev, resumeUrl: result }));
+          setResumeFileName(file.name);
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.error('Resume upload error:', err);
+    } finally {
+      setIsUploadingResume(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,17 +310,98 @@ export const ProfileView: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-amber-400" /> Resume / CV Document URL
-              </label>
-              <input
-                type="url"
-                value={formData.resumeUrl}
-                onChange={e => setFormData({ ...formData, resumeUrl: e.target.value })}
-                placeholder="https://drive.google.com/... or hosted PDF link"
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-brand-500"
-              />
+            <div className="sm:col-span-2 p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-amber-400" /> Resume / CV Document (PDF)
+                </label>
+                {formData.resumeUrl && (
+                  <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PDF Attached
+                  </span>
+                )}
+              </div>
+
+              {formData.resumeUrl ? (
+                <div className="p-3 rounded-xl bg-slate-900 border border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-100">
+                        {resumeFileName || 'Student_Resume.pdf'}
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        PDF format • Contributes to Career Readiness verification
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={formData.resumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border border-brand-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      View / Open PDF
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, resumeUrl: '' });
+                        setResumeFileName('');
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-950/30 hover:bg-rose-900/40 text-rose-300 border border-rose-900/40 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      title="Remove PDF"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {/* File Upload Zone */}
+                  <label className="flex flex-col items-center justify-center p-5 rounded-xl border-2 border-dashed border-slate-800 hover:border-brand-500/50 hover:bg-slate-900/50 cursor-pointer transition-all">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="p-3 rounded-full bg-slate-900 text-brand-400 mb-2">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-200">
+                        {isUploadingResume ? 'Processing PDF...' : 'Click to Upload Resume PDF'}
+                      </span>
+                      <span className="text-[11px] text-slate-500 mt-0.5">
+                        PDF format up to 25MB
+                      </span>
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={handleResumeUpload}
+                      disabled={isUploadingResume}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {/* Or hosted link input */}
+                  <div className="pt-2 border-t border-slate-800/60">
+                    <span className="text-[11px] text-slate-400 block mb-1">
+                      Or paste an external hosted PDF / Google Drive link:
+                    </span>
+                    <input
+                      type="url"
+                      value={formData.resumeUrl}
+                      onChange={e => setFormData({ ...formData, resumeUrl: e.target.value })}
+                      placeholder="https://drive.google.com/... or hosted PDF URL"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
