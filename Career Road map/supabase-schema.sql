@@ -62,9 +62,17 @@ CREATE TABLE IF NOT EXISTS public.roadmaps (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     career_path_id UUID NOT NULL REFERENCES public.career_paths(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
+    short_description TEXT DEFAULT '',
     description TEXT DEFAULT '',
+    cover_image_url TEXT DEFAULT '',
+    difficulty TEXT DEFAULT 'Intermediate',
+    estimated_duration TEXT DEFAULT '6 Months',
+    learning_objectives TEXT[] DEFAULT '{}',
+    skills_covered TEXT[] DEFAULT '{}',
+    prerequisites TEXT[] DEFAULT '{}',
     version TEXT DEFAULT '1.0',
-    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'unpublished', 'archived')),
+    display_order INT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -75,19 +83,23 @@ CREATE TABLE IF NOT EXISTS public.roadmap_phases (
     roadmap_id UUID NOT NULL REFERENCES public.roadmaps(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT DEFAULT '',
+    phase_image_url TEXT DEFAULT '',
     learning_objectives TEXT[] DEFAULT '{}',
+    skills_covered TEXT[] DEFAULT '{}',
+    prerequisites TEXT[] DEFAULT '{}',
     estimated_duration TEXT DEFAULT '',
     sort_order INT DEFAULT 0,
     status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 7. Modules
+-- 7. Modules / Courses
 CREATE TABLE IF NOT EXISTS public.modules (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phase_id UUID NOT NULL REFERENCES public.roadmap_phases(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT DEFAULT '',
+    course_image_url TEXT DEFAULT '',
     estimated_duration TEXT DEFAULT '',
     difficulty TEXT DEFAULT 'Intermediate',
     learning_objectives TEXT[] DEFAULT '{}',

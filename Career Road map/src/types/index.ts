@@ -14,6 +14,7 @@ export interface StudentProfile {
   graduationYear?: string;
   careerGoal?: string;
   targetCareerId?: string;
+  selectedRoadmapId?: string;
   dailyAvailableHours?: number;
   githubUrl?: string;
   linkedinUrl?: string;
@@ -47,9 +48,17 @@ export interface Roadmap {
   id: string;
   careerPathId: string;
   title: string;
+  shortDescription?: string;
   description: string;
-  version: string;
+  coverImageUrl?: string;
+  difficulty?: string;
+  estimatedDuration?: string;
+  learningObjectives?: string[];
+  skillsCovered?: string[];
+  prerequisites?: string[];
+  version?: string;
   status: ContentStatus;
+  displayOrder?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,6 +68,9 @@ export interface RoadmapPhase {
   roadmapId: string;
   title: string;
   description: string;
+  phaseImageUrl?: string;
+  skillsCovered?: string[];
+  prerequisites?: string[];
   learningObjectives: string[];
   estimatedDuration: string;
   sortOrder: number;
@@ -71,6 +83,7 @@ export interface Module {
   phaseId: string;
   name: string;
   description: string;
+  courseImageUrl?: string;
   estimatedDuration: string;
   difficulty: string;
   learningObjectives: string[];

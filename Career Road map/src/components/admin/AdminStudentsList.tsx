@@ -11,7 +11,8 @@ import {
   FolderGit2,
   ExternalLink,
   Mail,
-  UserCheck
+  UserCheck,
+  FileText
 } from 'lucide-react';
 import { GithubIcon, LinkedInIcon } from '../common/BrandIcons';
 import { useData } from '../../context/DataContext';
@@ -178,7 +179,17 @@ export const AdminStudentsList: React.FC = () => {
                 <span className="text-slate-400 font-semibold block">Graduation Year:</span>
                 <p className="text-slate-200">{selectedStudent.graduationYear || 'Not provided'}</p>
               </div>
-              <div className="pt-2 border-t border-slate-800 flex gap-4">
+              <div className="pt-2 border-t border-slate-800 flex flex-wrap gap-4">
+                {selectedStudent.resumeUrl && (
+                  <a
+                    href={selectedStudent.resumeUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-amber-400 hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <FileText className="w-3.5 h-3.5" /> View Resume (PDF)
+                  </a>
+                )}
                 {selectedStudent.githubUrl && (
                   <a
                     href={selectedStudent.githubUrl}
